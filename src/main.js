@@ -28,7 +28,7 @@ document.querySelector('#app').innerHTML = `
   <div class="tools">
     <!-- IMAGE TOOLS TAB -->
     <div class="tab-content active" id="image">
-      <div class="tool">
+      <div class="tool" data-tool="background-remover">
         <h2>📸 Background Remover</h2>
         <input type="file" id="bg-input" accept="image/*">
         <button id="bg-process">Remove Background</button>
@@ -47,7 +47,7 @@ document.querySelector('#app').innerHTML = `
         <p class="info">💡 Tip: Use "Remove White Background" for better control over cropping</p>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="compressor">
         <h2>🗜️ Image Compressor</h2>
         <input type="file" id="comp-input" accept="image/*">
         <input type="range" id="quality" min="10" max="90" value="50" placeholder="Quality">
@@ -67,7 +67,7 @@ document.querySelector('#app').innerHTML = `
         <a id="comp-download" download style="display:none;"></a>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="resizer">
         <h2>📏 Image Resizer</h2>
         <input type="file" id="resize-input" accept="image/*">
         <input type="number" id="width" placeholder="Width (px)">
@@ -87,7 +87,7 @@ document.querySelector('#app').innerHTML = `
         <a id="resize-download" download style="display:none"></a>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="converter">
         <h2>🔄 Format Converter</h2>
         <input type="file" id="convert-input" accept="image/*">
         <select id="format">
@@ -110,7 +110,7 @@ document.querySelector('#app').innerHTML = `
         <a id="convert-download" download style="display:none"></a>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="circle-cutter">
         <h2>⭕ Circular Image Cutter</h2>
         <input type="file" id="circle-input" accept="image/*">
         <div class="circle-preview-container" id="circleContainer">
@@ -132,7 +132,7 @@ document.querySelector('#app').innerHTML = `
         <a id="circle-download" download style="display:none"></a>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="remove-white-bg">
         <h2>🎨 Remove White Background</h2>
         <input type="file" id="white-bg-input" accept="image/*">
         <input type="range" id="threshold" min="0" max="255" value="200" placeholder="Threshold">
@@ -155,21 +155,21 @@ document.querySelector('#app').innerHTML = `
 
     <!-- PDF TOOLS TAB -->
     <div class="tab-content" id="pdf">
-      <div class="tool">
+      <div class="tool" data-tool="img-to-pdf">
         <h2>📷 Image to PDF</h2>
         <input type="file" id="img2pdf-input" accept="image/*" multiple>
         <button id="img2pdf-process">Convert to PDF</button>
         <a id="img2pdf-download" download style="display:none"></a>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="pdf-merge">
         <h2>🔗 PDF Merger</h2>
         <input type="file" id="pdf-merge-input" accept=".pdf" multiple>
         <button id="pdf-merge-process">Merge PDFs</button>
         <a id="pdf-merge-download" download style="display:none"></a>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="pdf-split">
         <h2>✂️ PDF Splitter</h2>
         <input type="file" id="pdf-split-input" accept=".pdf">
         <input type="number" id="split-page" placeholder="Page number to split at" min="1">
@@ -181,14 +181,14 @@ document.querySelector('#app').innerHTML = `
 
     <!-- TEXT TOOLS TAB -->
     <div class="tab-content" id="text">
-      <div class="tool">
+      <div class="tool" data-tool="word-counter">
         <h2>📊 Word Counter</h2>
         <textarea id="word-input" placeholder="Paste your text here..."></textarea>
         <button id="word-process">Count</button>
         <div id="word-result" class="result"></div>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="case-converter">
         <h2>🔤 Case Converter</h2>
         <textarea id="case-input" placeholder="Enter text..."></textarea>
         <div class="button-group">
@@ -203,7 +203,7 @@ document.querySelector('#app').innerHTML = `
 
     <!-- UTILITIES TAB -->
     <div class="tab-content" id="color">
-      <div class="tool">
+      <div class="tool" data-tool="color-picker">
         <h2>🎨 Color Picker</h2>
         <input type="color" id="colorPicker" value="#FF6B6B">
         <p class="info">Color: <strong id="colorValue">#FF6B6B</strong></p>
@@ -211,7 +211,7 @@ document.querySelector('#app').innerHTML = `
         <button id="copy-color">Copy Color Code</button>
       </div>
 
-      <div class="tool">
+      <div class="tool" data-tool="single-img-to-pdf">
         <h2>📤 Image to PDF (Single)</h2>
         <input type="file" id="single-img2pdf" accept="image/*">
         <button id="single-img2pdf-process">Convert</button>
@@ -325,6 +325,32 @@ function attachToolFileHandlers() {
 }
 
 attachToolFileHandlers()
+
+// Auto-open a tool when the page is loaded with a `tool` query or a pathname
+function openToolFromURL() {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    let slug = params.get('tool')
+    if (!slug) {
+      // allow path like /background-remover
+      const path = window.location.pathname.replace(/\/+$/,'')
+      const parts = path.split('/')
+      const last = parts.pop() || parts.pop()
+      if (last && last !== '') slug = last
+    }
+    if (!slug) return
+    const tool = document.querySelector(`.tool[data-tool="${slug}"]`)
+    if (tool) {
+      expandToolCard(tool)
+      setTimeout(() => tool.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120)
+    }
+  } catch (e) {
+    console.warn('openToolFromURL error', e)
+  }
+}
+
+// Run on load
+openToolFromURL()
 
 // QUALITY SLIDER
 document.getElementById('quality').addEventListener('input', (e) => {
