@@ -1,0 +1,7 @@
+* text=auto
+# Ensure common text files use normalized line endings
+*.html text
+*.css text
+*.js text
+*.json text
+*.md text
